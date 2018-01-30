@@ -5,7 +5,9 @@ var Movie = Backbone.Model.extend({
   },
 
   toggleLike: function() {
-    // your code here
+    // access the current value of like, and set it to opposite of current val
+    this.set('like', !this.get('like'));
+    // this.collection.sort();
   }
 
 });
@@ -15,14 +17,19 @@ var Movies = Backbone.Collection.extend({
   model: Movie,
 
   initialize: function() {
-    // your code here
+    //listen for any change, if there is a change, sort
+    this.on('change', this.sort, this);
   },
 
   comparator: 'title',
 
   sortByField: function(field) {
-    // your code here
+    //access current comparator, change it to the argument
+    this['comparator'] = field; // no change is occuring
+    this.sort(); // does this make a change event?
   }
+  
+  // this.model.on('change: toggleLike', this.sort(), this);
 
 });
 
@@ -33,8 +40,10 @@ var AppView = Backbone.View.extend({
   },
 
   handleClick: function(e) {
+    // console.log("field toggle was clicked")
     var field = $(e.target).val();
     this.collection.sortByField(field);
+    
   },
 
   render: function() {
@@ -58,7 +67,10 @@ var MovieView = Backbone.View.extend({
                         </div>'),
 
   initialize: function() {
-    // your code here
+    //listen for a change in toggleLike, re-render on change
+    this.model.on('change', this.render, this);
+
+    // this.listenTo(this.model, 'change: toggleLike', this.render);
   },
 
   events: {
@@ -66,7 +78,8 @@ var MovieView = Backbone.View.extend({
   },
 
   handleClick: function() {
-    // your code here
+    //should toggleLike when handleClick is called
+    this.model.toggleLike();
   },
 
   render: function() {
@@ -79,10 +92,13 @@ var MovieView = Backbone.View.extend({
 var MoviesView = Backbone.View.extend({
 
   initialize: function() {
-    // your code here
+    //should re-render when there is a change
+    this.collection.on('sort', this.render, this);
   },
 
   render: function() {
+// debugger;
+   console.log("render was called")
     this.$el.empty();
     this.collection.forEach(this.renderMovie, this);
   },
